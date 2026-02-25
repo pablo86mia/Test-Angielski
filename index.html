@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FF6B6B">
+    <title>Angielski Fun - Ucz się słówek!</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .header h1 {
+            color: #fff;
+            font-size: 2rem;
+            text-shadow: 3px 3px 0 #ff6b6b;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #ffeaa7;
+            font-size: 1rem;
+        }
+        
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 20px;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 15px 10px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+            color: #667eea;
+        }
+        
+        .nav-tab.active {
+            background: #ff6b6b;
+            color: #fff;
+            transform: scale(1.05);
+        }
+        
+        .nav-tab:active {
+            transform: scale(0.95);
+        }
+        
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Cards */
+        .card {
+            background: #fff;
+            border-radius: 25px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Upload Area */
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #ff6b6b;
+        }
+        
+        .upload-area .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .upload-area p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: #fff;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 1rem;
+            width: auto;
+        }
+        
+        /* Word List */
+        .word-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .word-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .word-number {
+            width: 35px;
+            height: 35px;
+            background: #667eea;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .word-content {
+            flex: 1;
+        }
+        
+        .word-english {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .word-polish {
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .word-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+        
+        .icon-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .icon-btn.speak {
+            background: #4CAF50;
+        }
+        
+        .icon-btn.edit {
+            background: #FFC107;
+        }
+        
+        .icon-btn.delete {
+            background: #f44336;
+        }
+        
+        /* Quiz */
+        .quiz-card {
+            text-align: center;
+            padding: 40px 30px;
+        }
+        
+        .quiz-progress {
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .quiz-score {
+            font-size: 1.5rem;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-question {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-polish {
+            font-size: 2.5rem;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+        }
+        
+        .quiz-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .quiz-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .quiz-input.correct {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+            animation: correctPulse 0.5s ease;
+        }
+        
+        .quiz-input.wrong {
+            border-color: #f44336;
+            background: #ffebee;
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        
+        .quiz-feedback {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            min-height: 30px;
+        }
+        
+        .quiz-feedback.correct {
+            color: #4CAF50;
+        }
+        
+        .quiz-feedback.wrong {
+            color: #f44336;
+        }
+        
+        /* Results */
+        .results-card {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .results-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        
+        .results-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .results-score {
+            font-size: 3rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .results-message {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        /* Confetti */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1000;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: #fff;
+            border-radius: 25px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            animation: modalIn 0.3s ease;
+        }
+        
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+        
+        /* Settings */
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .setting-label {
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ccc;
+            border-radius: 30px;
+            transition: 0.3s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        .toggle input:checked + .toggle-slider {
+            background: #667eea;
+        }
+        
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 400px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .nav-tab {
+                font-size: 0.85rem;
+                padding: 12px 8px;
+            }
+            
+            .quiz-polish {
+                font-size: 1.8rem;
+                padding: 20px;
+            }
+        }
+        
+        /* Sample Data Button */
+        .sample-data-btn {
+            margin-top: 15px;
+            background: #ffeaa7;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📚 Angielski Fun</h1>
+            <p>Ucz się słówek zabawą!</p>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showScreen('upload')">📷 Zdjęcie</button>
+            <button class="nav-tab" onclick="showScreen('words')">📝 Słówka</button>
+            <button class="nav-tab" onclick="showScreen('quiz')">🎮 Quiz</button>
+        </div>
+        
+        <!-- Upload Screen -->
+        <div id="uploadScreen" class="screen active">
+            <div class="card">
+                <div class="card-title">📷 Dodaj zdjęcie słówek</div>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()" 
+                     ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <div class="icon">📸</div>
+                    <p>Kliknij tutaj lub przeciągnij zdjęcie</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px;">Rozpoznam słówka automatycznie!</p>
+                </div>
+                <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+                
+                <button class="btn btn-warning sample-data-btn" onclick="loadSampleData()">
+                    🎯 Wczytaj przykładowe słówka
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">⚙️ Ustawienia</div>
+                <div class="setting-item">
+                    <span class="setting-label">🔊 Dźwięki</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">🗣️ Czytanie słówek</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="ttsToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Words Screen -->
+        <div id="wordsScreen" class="screen">
+            <div class="card">
+                <div class="card-title">
+                    📝 Twoje słówka
+                    <span id="wordCount" style="margin-left: auto; background: #667eea; color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;">0</span>
+                </div>
+                
+                <button class="btn btn-success" onclick="showAddWordModal()">
+                    ➕ Dodaj nowe słówko
+                </button>
+                
+                <button class="btn btn-danger" onclick="clearAllWords()">
+                    🗑️ Wyczyść wszystkie
+                </button>
+                
+                <div id="wordList" class="word-list">
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>Brak słówek! Dodaj zdjęcie lub wczytaj przykładowe dane.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="screen">
+            <div id="quizStart" class="card">
+                <div class="card-title">🎮 Gotowy na quiz?</div>
+                <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">
+                    Sprawdź swoją wiedzę! Będę pokazywać słówka po polsku, a Ty wpisz po angielsku.
+                </p>
+                <div id="quizWordCountInfo" style="margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 15px; color: #1976d2;">
+                    Masz <strong>0</strong> słówek. Dodaj słówka aby zacząć!
+                </div>
+                <button class="btn btn-primary" onclick="startQuiz()">
+                    🚀 Start Quiz!
+                </button>
+            </div>
+            
+            <div id="quizGame" class="card quiz-card" style="display: none;">
+                <div class="quiz-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">
+                        Pytanie <span id="currentQuestion">1</span> z <span id="totalQuestions">10</span>
+                    </div>
+                </div>
+                
+                <div class="quiz-score">⭐ <span id="currentScore">0</span> pkt</div>
+                
+                <div class="quiz-question">Jak to jest po angielsku?</div>
+                <div class="quiz-polish" id="quizPolish">gotować</div>
+                
+                <input type="text" class="quiz-input" id="quizInput" placeholder="Wpisz po angielsku..." 
+                       onkeypress="handleQuizKeypress(event)" autocomplete="off">
+                
+                <div class="quiz-feedback" id="quizFeedback"></div>
+                
+                <button class="btn btn-success" id="checkBtn" onclick="checkAnswer()">
+                    ✓ Sprawdź
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" style="display: none;">
+                    ➡️ Dalej
+                </button>
+                <button class="btn btn-warning" onclick="speakCurrentWord()">
+                    🔊 Posłuchaj
+                </button>
+            </div>
+            
+            <div id="quizResults" class="card results-card" style="display: none;">
+                <div class="results-icon" id="resultsIcon">🎉</div>
+                <div class="results-title">Koniec quizu!</div>
+                <div class="results-score"><span id="finalScore">0</span> / <span id="maxScore">0</span></div>
+                <div class="results-message" id="resultsMessage">Świetna robota!</div>
+                <button class="btn btn-primary" onclick="startQuiz()">
+                    🔄 Zagraj jeszcze raz
+                </button>
+                <button class="btn btn-success" onclick="showScreen('words')">
+                    📝 Przeglądaj słówka
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit/Add Word Modal -->
+    <div class="modal-overlay" id="wordModal">
+        <div class="modal">
+            <div class="modal-title" id="modalTitle">✏️ Edytuj słówko</div>
+            <div class="form-group">
+                <label class="form-label">🇬🇧 Po angielsku:</label>
+                <input type="text" class="form-input" id="editEnglish" placeholder="np. cook">
+            </div>
+            <div class="form-group">
+                <label class="form-label">🇵🇱 Po polsku:</label>
+                <input type="text" class="form-input" id="editPolish" placeholder="np. gotować">
+            </div>
+            <button class="btn btn-success" onclick="saveWord()">💾 Zapisz</button>
+            <button class="btn btn-danger" onclick="closeModal()">❌ Anuluj</button>
+        </div>
+    </div>
+    
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- Tesseract.js -->
+    <script src='https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js'></script>
+    
+    <script>
+        // State
+        let words = [];
+        let quizState = {
+            questions: [],
+            currentIndex: 0,
+            score: 0,
+            answered: false
+        };
+        let editingIndex = -1;
+        
+        // Sound effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (!document.getElementById('soundToggle').checked) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'success') {
+                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+                oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } else if (type === 'error') {
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } else if (type === 'click') {
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            }
+        }
+        
+        // Text to Speech
+        function speak(text) {
+            if (!document.getElementById('ttsToggle').checked) return;
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Navigation
+        function showScreen(screenName) {
+            playSound('click');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            if (screenName === 'upload') {
+                document.getElementById('uploadScreen').classList.add('active');
+                document.querySelectorAll('.nav-tab')[0].classList.add('active');
+            } else if (screenName === 'words') {
+                document.getElementById('wordsScreen').classList.add('active');
+                document.querySelectorAll('.nav-tab')[1].classList.add('active');
+                renderWordList();
+            } else if (screenName === 'quiz') {
+                document.getElementById('quizScreen').classList.add('active');
+                document.querySelectorAll('.nav-tab')[2].classList.add('active');
+                updateQuizInfo();
+            }
+        }
+        
+        // File Upload
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+        
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processImage(files[0]);
+            }
+        }
+        
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processImage(file);
+            }
+        }
+        
+        async function processImage(file) {
+            playSound('click');
+            
+            // Show loading
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Czytam słówka z zdjęcia...</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px;">To może chwilę potrwać ⏳</p>
+                </div>
+            `;
+            
+            try {
+                const result = await Tesseract.recognize(
+                    file,
+                    'eng+pol',
+                    { logger: m => console.log(m) }
+                );
+                
+                const text = result.data.text;
+                parseWordsFromText(text);
+                
+                uploadArea.innerHTML = `
+                    <div class="icon">✅</div>
+                    <p>Znaleziono ${words.length} słówek!</p>
+                    <button class="btn btn-success" style="margin-top: 15px;" onclick="showScreen('words')">
+                        Zobacz słówka 📝
+                    </button>
+                `;
+                
+                saveWords();
+                playSound('success');
+                
+            } catch (error) {
+                console.error('OCR Error:', error);
+                uploadArea.innerHTML = `
+                    <div class="icon">❌</div>
+                    <p>Ups! Nie udało się odczytać zdjęcia.</p>
+                    <p style="font-size: 0.9rem;">Spróbuj ponownie lub dodaj słówka ręcznie.</p>
+                `;
+                playSound('error');
+            }
+        }
+        
+        function parseWordsFromText(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            for (const line of lines) {
+                // Try different separators
+                let parts = [];
+                if (line.includes('|')) {
+                    parts = line.split('|').map(p => p.trim());
+                } else if (line.includes('-')) {
+                    parts = line.split('-').map(p => p.trim());
+                } else if (line.includes('–')) {
+                    parts = line.split('–').map(p => p.trim());
+                } else if (line.includes(',')) {
+                    parts = line.split(',').map(p => p.trim());
+                } else if (line.includes('\t')) {
+                    parts = line.split('\t').map(p => p.trim());
+                }
+                
+                if (parts.length >= 2) {
+                    const english = parts[0].replace(/[^\w\s]/g, '').trim().toLowerCase();
+                    const polish = parts[1].replace(/[^\w\sąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, '').trim().toLowerCase();
+                    
+                    if (english && polish && english.length > 1 && polish.length > 1) {
+                        // Check if not duplicate
+                        const exists = words.some(w => 
+                            w.english.toLowerCase() === english && 
+                            w.polish.toLowerCase() === polish
+                        );
+                        if (!exists) {
+                            words.push({ english, polish });
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Word Management
+        function renderWordList() {
+            const list = document.getElementById('wordList');
+            const count = document.getElementById('wordCount');
+            
+            count.textContent = words.length;
+            
+            if (words.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>Brak słówek! Dodaj zdjęcie lub wczytaj przykładowe dane.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = words.map((word, index) => `
+                <div class="word-item">
+                    <div class="word-number">${index + 1}</div>
+                    <div class="word-content">
+                        <div class="word-english">${word.english}</div>
+                        <div class="word-polish">${word.polish}</div>
+                    </div>
+                    <div class="word-actions">
+                        <button class="icon-btn speak" onclick="speak('${word.english}')">🔊</button>
+                        <button class="icon-btn edit" onclick="editWord(${index})">✏️</button>
+                        <button class="icon-btn delete" onclick="deleteWord(${index})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function showAddWordModal() {
+            playSound('click');
+            editingIndex = -1;
+            document.getElementById('modalTitle').textContent = '➕ Dodaj słówko';
+            document.getElementById('editEnglish').value = '';
+            document.getElementById('editPolish').value = '';
+            document.getElementById('wordModal').classList.add('active');
+        }
+        
+        function editWord(index) {
+            playSound('click');
+            editingIndex = index;
+            document.getElementById('modalTitle').textContent = '✏️ Edytuj słówko';
+            document.getElementById('editEnglish').value = words[index].english;
+            document.getElementById('editPolish').value = words[index].polish;
+            document.getElementById('wordModal').classList.add('active');
+        }
+        
+        function saveWord() {
+            const english = document.getElementById('editEnglish').value.trim().toLowerCase();
+            const polish = document.getElementById('editPolish').value.trim().toLowerCase();
+            
+            if (!english || !polish) {
+                alert('Wypełnij oba pola!');
+                return;
+            }
+            
+            if (editingIndex >= 0) {
+                words[editingIndex] = { english, polish };
+            } else {
+                words.push({ english, polish });
+            }
+            
+            saveWords();
+            closeModal();
+            renderWordList();
+            playSound('success');
+        }
+        
+        function deleteWord(index) {
+            playSound('click');
+            if (confirm('Na pewno chcesz usunąć to słówko?')) {
+                words.splice(index, 1);
+                saveWords();
+                renderWordList();
+            }
+        }
+        
+        function clearAllWords() {
+            playSound('click');
+            if (words.length === 0) return;
+            if (confirm('Na pewno chcesz usunąć WSZYSTKIE słówka?')) {
+                words = [];
+                saveWords();
+                renderWordList();
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('wordModal').classList.remove('active');
+        }
+        
+        // Quiz
+        function updateQuizInfo() {
+            const info = document.getElementById('quizWordCountInfo');
+            info.innerHTML = `Masz <strong>${words.length}</strong> słówek. ${words.length < 3 ? 'Dodaj więcej słówek aby zacząć!' : 'Gotowy do gry?'}`;
+        }
+        
+        function startQuiz() {
+            playSound('click');
+            
+            if (words.length < 3) {
+                alert('Dodaj co najmniej 3 słówka aby zacząć quiz!');
+                return;
+            }
+            
+            // Shuffle words
+            quizState.questions = [...words].sort(() => Math.random() - 0.5);
+            quizState.currentIndex = 0;
+            quizState.score = 0;
+            quizState.answered = false;
+            
+            document.getElementById('quizStart').style.display = 'none';
+            document.getElementById('quizResults').style.display = 'none';
+            document.getElementById('quizGame').style.display = 'block';
+            
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            const question = quizState.questions[quizState.currentIndex];
+            
+            document.getElementById('currentQuestion').textContent = quizState.currentIndex + 1;
+            document.getElementById('totalQuestions').textContent = quizState.questions.length;
+            document.getElementById('currentScore').textContent = quizState.score;
+            document.getElementById('quizPolish').textContent = question.polish;
+            document.getElementById('quizInput').value = '';
+            document.getElementById('quizInput').className = 'quiz-input';
+            document.getElementById('quizFeedback').textContent = '';
+            document.getElementById('quizFeedback').className = 'quiz-feedback';
+            document.getElementById('checkBtn').style.display = 'inline-flex';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            // Update progress
+            const progress = ((quizState.currentIndex) / quizState.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            document.getElementById('quizInput').focus();
+            quizState.answered = false;
+        }
+        
+        function checkAnswer() {
+            if (quizState.answered) return;
+            
+            const input = document.getElementById('quizInput');
+            const feedback = document.getElementById('quizFeedback');
+            const answer = input.value.trim().toLowerCase();
+            const correct = quizState.questions[quizState.currentIndex].english.toLowerCase();
+            
+            if (!answer) {
+                feedback.textContent = 'Wpisz odpowiedź!';
+                feedback.className = 'quiz-feedback wrong';
+                return;
+            }
+            
+            quizState.answered = true;
+            
+            if (answer === correct) {
+                quizState.score++;
+                input.classList.add('correct');
+                feedback.textContent = '✅ Brawo! Poprawna odpowiedź!';
+                feedback.classList.add('correct');
+                playSound('success');
+                document.getElementById('currentScore').textContent = quizState.score;
+            } else {
+                input.classList.add('wrong');
+                feedback.innerHTML = `❌ Ups! Poprawna odpowiedź to: <strong>${correct}</strong>`;
+                feedback.classList.add('wrong');
+                playSound('error');
+            }
+            
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'inline-flex';
+            
+            // Update progress
+            const progress = ((quizState.currentIndex + 1) / quizState.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+        
+        function nextQuestion() {
+            playSound('click');
+            quizState.currentIndex++;
+            
+            if (quizState.currentIndex >= quizState.questions.length) {
+                showResults();
+            } else {
+                showQuestion();
+            }
+        }
+        
+        function handleQuizKeypress(e) {
+            if (e.key === 'Enter') {
+                if (quizState.answered) {
+                    nextQuestion();
+                } else {
+                    checkAnswer();
+                }
+            }
+        }
+        
+        function speakCurrentWord() {
+            if (quizState.questions[quizState.currentIndex]) {
+                speak(quizState.questions[quizState.currentIndex].english);
+            }
+        }
+        
+        function showResults() {
+            document.getElementById('quizGame').style.display = 'none';
+            document.getElementById('quizResults').style.display = 'block';
+            
+            const maxScore = quizState.questions.length;
+            const score = quizState.score;
+            const percentage = (score / maxScore) * 100;
+            
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('maxScore').textContent = maxScore;
+            
+            let icon, message;
+            if (percentage === 100) {
+                icon = '🏆';
+                message = 'Perfekcyjny wynik! Jesteś mistrzem!';
+                createConfetti();
+                playSound('success');
+            } else if (percentage >= 80) {
+                icon = '🌟';
+                message = 'Świetnie Ci poszło! Tak trzymaj!';
+                createConfetti();
+                playSound('success');
+            } else if (percentage >= 60) {
+                icon = '👍';
+                message = 'Dobra robota! Jeszcze trochę ćwiczeń!';
+            } else {
+                icon = '💪';
+                message = 'Nie poddawaj się! Ćwicz dalej!';
+            }
+            
+            document.getElementById('resultsIcon').textContent = icon;
+            document.getElementById('resultsMessage').textContent = message;
+        }
+        
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#fd79a8'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                container.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+        
+        // LocalStorage
+        function saveWords() {
+            localStorage.setItem('angielskiFunWords', JSON.stringify(words));
+        }
+        
+        function loadWords() {
+            const saved = localStorage.getItem('angielskiFunWords');
+            if (saved) {
+                words = JSON.parse(saved);
+            }
+        }
+        
+        // Sample Data
+        function loadSampleData() {
+            playSound('click');
+            
+            const sampleWords = [
+                { english: 'act', polish: 'grać' },
+                { english: 'climb', polish: 'wspinać się' },
+                { english: 'cook', polish: 'gotować' },
+                { english: 'dive', polish: 'nurkować' },
+                { english: 'draw', polish: 'rysować' },
+                { english: 'fix', polish: 'naprawiać' },
+                { english: 'jump', polish: 'skakać' },
+                { english: 'read', polish: 'czytać' },
+                { english: 'ride', polish: 'jeździć' },
+                { english: 'run', polish: 'biegać' },
+                { english: 'sing', polish: 'śpiewać' },
+                { english: 'swim', polish: 'pływać' },
+                { english: 'write', polish: 'pisać' },
+                { english: 'make a poster', polish: 'zrobić plakat' },
+                { english: 'play football', polish: 'grać w piłkę nożną' },
+                { english: 'ride a bike', polish: 'jeździć na rowerze' }
+            ];
+            
+            words = [...words, ...sampleWords];
+            saveWords();
+            
+            document.querySelector('.upload-area').innerHTML = `
+                <div class="icon">✅</div>
+                <p>Wczytano ${sampleWords.length} przykładowych słówek!</p>
+                <button class="btn btn-success" style="margin-top: 15px;" onclick="showScreen('words')">
+                    Zobacz słówka 📝
+                </button>
+            `;
+            
+            playSound('success');
+        }
+        
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadWords();
+        });
+        
+        // Close modal on overlay click
+        document.getElementById('wordModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('wordModal')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
